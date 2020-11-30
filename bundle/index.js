@@ -27,11 +27,19 @@ var __toModule = (module) => {
   return __exportStar(__defProp(module != null ? __create(__getProtoOf(module)) : {}, "default", {value: module, enumerable: true}), module);
 };
 
+// external:react
+import * as react_star from "react";
+var require_react = __commonJS((exports) => {
+  __exportStar(exports, react_star);
+});
+
+console.log(require_react())
+
 // node_modules/react-storage-hooks/dist/common.js
 var require_common = __commonJS((exports) => {
   "use strict";
   Object.defineProperty(exports, "__esModule", {value: true});
-  var react_1 = require("react");
+  var react_1 = require_react();
   function fromStorage(value) {
     return value !== null ? JSON.parse(value) : null;
   }
@@ -120,7 +128,7 @@ var require_common = __commonJS((exports) => {
 var require_state = __commonJS((exports) => {
   "use strict";
   Object.defineProperty(exports, "__esModule", {value: true});
-  var react_1 = require("react");
+  var react_1 = require_react();
   var common_1 = require_common();
   function useStorageState(storage, key, defaultState) {
     if (defaultState === void 0) {
@@ -138,7 +146,7 @@ var require_state = __commonJS((exports) => {
 var require_reducer = __commonJS((exports) => {
   "use strict";
   Object.defineProperty(exports, "__esModule", {value: true});
-  var react_1 = require("react");
+  var react_1 = require_react();
   var common_1 = require_common();
   var FORCE_STATE_ACTION = "__FORCE_STATE_INTERNAL_API__";
   function isForceStateAction(action) {
@@ -179,7 +187,7 @@ var require_dist = __commonJS((exports) => {
 });
 
 // src/index.ts
+var react = __toModule(require_react());
 var react_storage_hooks = __toModule(require_dist());
-import React from "react";
-React;
+react.default;
 react_storage_hooks.useStorageReducer;
