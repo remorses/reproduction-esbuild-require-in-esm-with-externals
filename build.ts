@@ -1,4 +1,4 @@
-import { build, Plugin } from 'esbuild'
+import { build, OnResolveArgs, OnResolveResult, Plugin } from 'esbuild'
 import path from 'path'
 import resolve from 'resolve'
 import fs from 'fs'
@@ -19,18 +19,20 @@ function Resolver(): Plugin {
     return {
         name: namespace,
         setup({ onLoad, onResolve }) {
-            onResolve({ filter: /.*/ }, async (args) => {
+            const resolver = async (args: OnResolveArgs) => {
                 let resolved = resolve.sync(args.path, {
                     basedir: args.resolveDir,
                 })
                 // resolved = path.relative(process.cwd(), resolved)
-                console.log({ resolved })
+                // console.log({ resolved })
                 return {
                     path: resolved,
                     namespace,
-                }
-            })
-            onLoad({ filter: /.*/ }, async (args) => {
+                } as OnResolveResult
+            }
+            onResolve({ filter: /.*/ }, resolver)
+            onResolve({ filter: /.*/, namespace }, resolver)
+            onLoad({ filter: /.*/, namespace }, async (args) => {
                 try {
                     const contents = await (
                         await fs.promises.readFile(args.path)
