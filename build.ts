@@ -1,35 +1,50 @@
-import { build } from 'esbuild'
+import { build, Plugin } from 'esbuild'
+import path from 'path'
+import resolve from 'resolve'
+import fs from 'fs'
 
 build({
     bundle: true,
     outdir: 'bundle',
+    splitting: true,
     format: 'esm',
     target: 'es2017',
-    entryPoints: ['./src/index.ts'],
-    plugins: [externalCjsToEsmPlugin(['react', 'react-dom'])],
-})
+    entryPoints: [require.resolve('react'), require.resolve('react-dom')],
+    plugins: [Resolver()],
+}).catch(console.error)
 
-function externalCjsToEsmPlugin(external: string[]) {
+function Resolver(): Plugin {
+    const namespace = 'resolver'
+
     return {
-        name: 'external',
-        setup(build) {
-            let escape = (text) =>
-                `^${text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}$`
-            let filter = new RegExp(external.map(escape).join('|'))
-            build.onResolve(
-                { filter: /.*/, namespace: 'external' },
-                (args) => ({
-                    path: args.path,
-                    external: true,
-                }),
-            )
-            build.onResolve({ filter }, (args) => ({
-                path: args.path,
-                namespace: 'external',
-            }))
-            build.onLoad({ filter: /.*/, namespace: 'external' }, (args) => ({
-                contents: `export * from ${JSON.stringify(args.path)}`,
-            }))
+        name: namespace,
+        setup({ onLoad, onResolve }) {
+            onResolve({ filter: /.*/ }, async (args) => {
+                let resolved = resolve.sync(args.path, {
+                    basedir: args.resolveDir,
+                })
+                // resolved = path.relative(process.cwd(), resolved)
+                console.log({ resolved })
+                return {
+                    path: resolved,
+                    namespace,
+                }
+            })
+            onLoad({ filter: /.*/ }, async (args) => {
+                try {
+                    const contents = await (
+                        await fs.promises.readFile(args.path)
+                    ).toString()
+                    let resolveDir = path.dirname(args.path)
+                    return {
+                        loader: 'default',
+                        contents,
+                        resolveDir,
+                    }
+                } catch (e) {
+                    throw new Error(`Cannot load ${args.path}, ${e}`)
+                }
+            })
         },
     }
 }
