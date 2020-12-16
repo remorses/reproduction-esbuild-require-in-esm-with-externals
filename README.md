@@ -1,3 +1,3 @@
 Reproduction for https://github.com/evanw/esbuild/issues/566
 
-After bundling `src/index.ts` with `yarn build`, `bundle/index.js` will contain require calls for `react`, even if format is set to `esm`
+Bundling with a resolver plugin 2 different files with same basename and parent directory causes Error `Two output files share the same path but have different contents: bundle/index.js`
